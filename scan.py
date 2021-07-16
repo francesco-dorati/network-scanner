@@ -4,7 +4,7 @@ import threading
 import subprocess
 from queue import Queue
 
-THREADS_NUMBER = 100
+THREADS_NUMBER = 5
 
 queue = Queue()
 ips = [f'192.168.1.{i}' for i in range(1, 255)]
@@ -26,8 +26,13 @@ def main():
     for thread in threads:
         thread.join()
     
+    dashes = 65
+    print('\n' + '-' * dashes)
+    print('  ip address\t\tmac address\t\thostname')
+    print('-' * dashes)
     for host in up:
-        print(f"{host['hostname'].strip('.homenet.telecomitalia.it')}\t\t\t({host['ip']})\t\t\t[{host['mac']}]")
+        print(f"  {host['ip']}\t\t{host['mac']}\t{host['hostname'].strip('.homenet.telecomitalia.it')}")
+    print('-' * dashes + '\n')
 
 
 def ping(ip):
@@ -40,7 +45,7 @@ def ping(ip):
 
     hostname, _, _, mac, *_ = out.stdout.read().decode('utf-8').strip().split()
 
-    if hostname != '?':
+    if mac.count(':') == 5:
         return hostname, mac
     else:
         return None
@@ -65,26 +70,3 @@ def worker():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-# import subprocess
-
-# COUNT = '1'
-# TIMEOUT = '1'
-
-# hosts = []
-
-# for i in range(1, 255):
-#     cmd = f'ping -c {COUNT} -q -t {TIMEOUT} 192.168.1.{i}'
-
-#     out = subprocess.Popen(cmd.split(),
-#                             stdout=subprocess.PIPE,
-#                             stderr=subprocess.PIPE).stdout.read().decode('utf-8')
-                
-#     if out.split('\n')[3].split()[3] == '1':
-#         hosts.append(i)
-
-# for host in hosts:
-#     print(f'{host} is up.')
